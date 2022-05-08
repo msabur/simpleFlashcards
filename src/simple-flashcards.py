@@ -1,8 +1,14 @@
+import os
+import sys
 import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from cardDeck import CardDeck
 import cardParser
+
+base_path = getattr(sys, '_MEIPASS',
+        os.path.dirname(os.path.abspath(__file__)))
+os.chdir(base_path)
 
 ### global variables
 builder = Gtk.Builder()

@@ -1,0 +1,21 @@
+build commands (notes):
+
+Attempt 1
+	pyi-makespec --onefile -i icon.png --add-data "design.glade:." main.py
+	pyinstaller main.spec
+
+That worked! But the executable takes long to start, and has big size
+
+Attempt 2
+	pyi-makespec --onedir -i icon.png --add-data "design.glade:." main.py
+	pyinstaller main.spec
+
+Also worked! Executable starts much faster, but size is even bigger
+
+Attempt 3
+	pyi-makespec --onedir -i icon.png --add-data "design.glade:." main.py
+	Modify the spec file's hooksconfig
+		WARNING: don't lose the spec file
+	pyinstaller main.spec
+
+Alhamdulillah! Executable is fast, and much smaller than previous attempt

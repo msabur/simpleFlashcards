@@ -14,10 +14,9 @@ a = Analysis(['src/simple-flashcards.py'],
 				 "gi": {
 					 "icons": ["Adwaita"],
 					 "themes": ["Adwaita"],
-					 "languages": ["en_GB", "zh_CN"],
+					 "languages": ["en_US", "en_GB"],
 					 "module-versions": {
 						 "Gtk": "3.0",
-						 "GtkSource": "4",
 					 },
 				 },
 			 },

@@ -1,11 +1,19 @@
+import random
+
 """A deck of flashcards"""
 class CardDeck:
     def __init__(self):
-        self.loaded = False
+        self.loaded = False # used for the GUI
         self.fronts = []
         self.backs = []
         self.current_card = 0
         self.is_flipped = False
+        self.cardSequence = []
+        self.shuffled = False
+
+        # cardSequence stores indices like [0,1,2,3,..]
+        # to shuffle cards, we randomize cardSequence: e.g. [3,2,4,1,...]
+        # then we will access cards in that new order
 
     def load_data(self, fronts, backs):
         # Doing some input validation
@@ -19,16 +27,7 @@ class CardDeck:
                 self.fronts.append(front)
                 self.backs.append(back)
             self.loaded = True
-
-    def loadSampleData(self):
-        self.clear_cards()
-        cards = ['deen', 'religion', 'kurah', 'ball', 'inab', 'grape',
-                'فيل', 'elephant', 'umm', 'mother', 'ab', 'father']
-        for front in cards[::2]:
-            self.fronts.append(front)
-        for back in cards[1::2]:
-            self.backs.append(back)
-        self.loaded = True
+            self.cardSequence = [*range(len(self.fronts))]
 
     def flip(self):
         """flip the current card"""
@@ -40,7 +39,8 @@ class CardDeck:
         if len(array) == 0:
             return ""
         else:
-            return array[self.current_card]
+            currentIndex = self.cardSequence[self.current_card]
+            return array[currentIndex]
 
     def get_number(self):
         """get current card number"""
@@ -62,4 +62,12 @@ class CardDeck:
         self.fronts.clear()
         self.backs.clear()
         self.loaded = False
+
+    def shuffle(self):
+        random.shuffle(self.cardSequence)
+        self.shuffled = True
+
+    def unshuffle(self):
+        self.cardSequence = [*range(len(self.fronts))]
+        self.shuffled = False
 

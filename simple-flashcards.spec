@@ -4,7 +4,7 @@
 block_cipher = None
 
 
-a = Analysis(['src/simple-flashcards.py'],
+a = Analysis(['simple-flashcards.py'],
              pathex=[],
              binaries=[],
              datas=[('design.glade', '.'), ('icon.png', '.')],

@@ -22,6 +22,7 @@ class CardDeck:
         elif len(fronts) != len(backs):
             raise ValueError("Invalid card data")
         else:
+            self.shuffled = False
             self.clear_cards()
             for front, back in zip(fronts, backs):
                 self.fronts.append(front)
@@ -70,4 +71,10 @@ class CardDeck:
     def unshuffle(self):
         self.cardSequence = [*range(len(self.fronts))]
         self.shuffled = False
+
+    def toggle_shuffle(self):
+        if self.shuffled:
+            self.unshuffle()
+        else:
+            self.shuffle()
 

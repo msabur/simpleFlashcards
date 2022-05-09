@@ -190,7 +190,7 @@ Please go to File | Open to open a deck of flashcards.</property>
             <property name="can_focus">True</property>
             <property name="receives_default">False</property>
             <property name="draw_indicator">True</property>
-            <signal name="toggled" handler="on_shuffleBtn_toggled" swapped="no"/>
+            <signal name="toggled" handler="onCardChange" swapped="no"/>
           </object>
           <packing>
             <property name="expand">False</property>

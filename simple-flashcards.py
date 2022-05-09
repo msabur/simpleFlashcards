@@ -1,5 +1,6 @@
 import os
 import sys
+import traceback
 import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
@@ -42,15 +43,20 @@ class SignalHandlers:
         response = dialog.run()
         if response == Gtk.ResponseType.OK:
             try:
+                # Load cards from the file
                 fronts, backs = cardParser.from_file(dialog.get_filename())
                 deck.load_data(fronts, backs)
+
+                # Make the cards show up on screen
                 card_buffer = builder.get_object("cardTextBuffer")
                 card_buffer.set_text(deck.get_text())
+
+                # Start in an unshuffled state
                 shuffleBtn = builder.get_object('shuffleBtn')
                 shuffleBtn.set_sensitive(True)
                 shuffleBtn.set_active(False)
             except Exception as e:
-                print(e)
+                print(traceback.format_exc())
                 error_dialog = builder.get_object("ParsingErrorDialog")
                 error_dialog.run()
                 # not doing anything with the response
@@ -60,7 +66,8 @@ class SignalHandlers:
 
     def on_about_activate(self, _):
         dialog = builder.get_object("AboutDialog")
-        response = dialog.run()
+        dialog.run()
+        # not doing anything with the response
         dialog.hide()
 
 

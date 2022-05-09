@@ -22,12 +22,12 @@ class CardDeck:
         elif len(fronts) != len(backs):
             raise ValueError("Invalid card data")
         else:
-            self.shuffled = False
             self.clear_cards()
             for front, back in zip(fronts, backs):
                 self.fronts.append(front)
                 self.backs.append(back)
             self.loaded = True
+            self.current_card = 0
             self.cardSequence = [*range(len(self.fronts))]
 
     def flip(self):

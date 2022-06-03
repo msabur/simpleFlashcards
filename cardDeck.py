@@ -45,7 +45,11 @@ class CardDeck:
 
     def get_number(self):
         """get current card number"""
-        return self.current_card
+        return self.cardSequence[self.current_card] if self.loaded else 0
+
+    def get_card_count(self):
+        """get number of cards in the open deck"""
+        return len(self.fronts) if self.loaded else 0
 
     def next_card(self):
         """switch to next card (do nothing if already at last card)"""

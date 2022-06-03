@@ -17,6 +17,11 @@ builder = Gtk.Builder()
 deck = CardDeck()
 ###
 
+def cardNumString():
+    """make a nice string with the current card number, e.g. 4/7"""
+    cardNumber = deck.get_number() + 1 # making it 1-indexed
+    numCards = deck.get_card_count()
+    return f"{cardNumber}/{numCards}"
 
 class SignalHandlers:
     def onDestroy(self, *args):
@@ -38,6 +43,9 @@ class SignalHandlers:
         card_buffer = builder.get_object("cardTextBuffer")
         card_buffer.set_text(deck.get_text())
 
+        cardNumBuf = builder.get_object("cardNumber").get_buffer()
+        cardNumBuf.set_text(cardNumString())
+
     def on_open_activate(self, _):
         dialog = builder.get_object("FileChooserDialog")
         response = dialog.run()
@@ -55,6 +63,10 @@ class SignalHandlers:
                 shuffleBtn = builder.get_object('shuffleBtn')
                 shuffleBtn.set_sensitive(True)
                 shuffleBtn.set_active(False)
+
+                # Show card number
+                cardNumBuf = builder.get_object("cardNumber").get_buffer()
+                cardNumBuf.set_text(cardNumString())
             except Exception as e:
                 print(traceback.format_exc())
                 error_dialog = builder.get_object("ParsingErrorDialog")

@@ -37,6 +37,57 @@
       </object>
     </child>
   </object>
+  <object class="GtkTextBuffer" id="KeyboardShortcutsBuffer">
+    <property name="text" translatable="yes">Navigation:
+	j: Forward
+	k: Back
+	f: Flip over
+Options:
+	s: Shuffle (toggle)</property>
+  </object>
+  <object class="GtkMessageDialog" id="KeyboardShortcutsDialog">
+    <property name="name">KeyboardShortcutsDialog</property>
+    <property name="can_focus">False</property>
+    <property name="type_hint">dialog</property>
+    <property name="buttons">ok</property>
+    <child type="titlebar">
+      <placeholder/>
+    </child>
+    <child internal-child="vbox">
+      <object class="GtkBox">
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox">
+            <property name="can_focus">False</property>
+            <property name="homogeneous">True</property>
+            <property name="layout_style">end</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkTextView" id="KeyboardShortcutsTextView">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="editable">False</property>
+            <property name="cursor_visible">False</property>
+            <property name="buffer">KeyboardShortcutsBuffer</property>
+            <property name="accepts_tab">False</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
   <object class="GtkMessageDialog" id="ParsingErrorDialog">
     <property name="can_focus">False</property>
     <property name="type_hint">dialog</property>
@@ -71,6 +122,82 @@
   <object class="GtkTextBuffer" id="cardTextBuffer">
     <property name="text" translatable="yes">No flash cards are currently open.
 Please go to File | Open to open a deck of flashcards.</property>
+  </object>
+  <object class="GtkFileFilter" id="filefilter1">
+    <mime-types>
+      <mime-type>text/plain</mime-type>
+    </mime-types>
+  </object>
+  <object class="GtkFileChooserDialog" id="FileChooserDialog">
+    <property name="name">FileChooserDialog</property>
+    <property name="can_focus">False</property>
+    <property name="type_hint">dialog</property>
+    <property name="skip_taskbar_hint">True</property>
+    <property name="filter">filefilter1</property>
+    <child type="titlebar">
+      <placeholder/>
+    </child>
+    <child internal-child="vbox">
+      <object class="GtkBox">
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox">
+            <property name="can_focus">False</property>
+            <property name="layout_style">end</property>
+            <child>
+              <object class="GtkButton" id="CancelButton">
+                <property name="label">gtk-cancel</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+                <property name="always_show_image">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="OpenButton">
+                <property name="label">gtk-open</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="can_default">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+                <property name="always_show_image">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+      </object>
+    </child>
+    <action-widgets>
+      <action-widget response="-6">CancelButton</action-widget>
+      <action-widget response="-5">OpenButton</action-widget>
+    </action-widgets>
+  </object>
+  <object class="GtkImage" id="shortcutIcon">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="stock">gtk-properties</property>
   </object>
   <object class="GtkWindow" id="MainWindow">
     <property name="name">MainWindow</property>
@@ -146,11 +273,22 @@ Please go to File | Open to open a deck of flashcards.</property>
                     <child>
                       <object class="GtkImageMenuItem" id="about">
                         <property name="label">gtk-about</property>
+                        <property name="name">aboutMenuitem</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <signal name="activate" handler="on_about_activate" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="keyboardShortcuts">
+                        <property name="label" translatable="yes">Keyboard Shortcuts</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="image">shortcutIcon</property>
+                        <property name="use_stock">False</property>
+                        <signal name="activate" handler="on_keyboardShortcuts_activate" swapped="no"/>
                       </object>
                     </child>
                   </object>
@@ -195,6 +333,7 @@ Please go to File | Open to open a deck of flashcards.</property>
                 <property name="receives_default">False</property>
                 <property name="draw_indicator">True</property>
                 <signal name="toggled" handler="onCardChange" swapped="no"/>
+                <accelerator key="s" signal="clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -239,6 +378,7 @@ Please go to File | Open to open a deck of flashcards.</property>
                 <property name="use_stock">True</property>
                 <property name="always_show_image">True</property>
                 <signal name="clicked" handler="onCardChange" swapped="no"/>
+                <accelerator key="k" signal="clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -254,6 +394,7 @@ Please go to File | Open to open a deck of flashcards.</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <signal name="clicked" handler="onCardChange" swapped="no"/>
+                <accelerator key="f" signal="clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -271,6 +412,7 @@ Please go to File | Open to open a deck of flashcards.</property>
                 <property name="use_stock">True</property>
                 <property name="always_show_image">True</property>
                 <signal name="clicked" handler="onCardChange" swapped="no"/>
+                <accelerator key="j" signal="clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -287,76 +429,5 @@ Please go to File | Open to open a deck of flashcards.</property>
         </child>
       </object>
     </child>
-  </object>
-  <object class="GtkFileFilter" id="filefilter1">
-    <mime-types>
-      <mime-type>text/plain</mime-type>
-    </mime-types>
-  </object>
-  <object class="GtkFileChooserDialog" id="FileChooserDialog">
-    <property name="name">FileChooserDialog</property>
-    <property name="can_focus">False</property>
-    <property name="type_hint">dialog</property>
-    <property name="skip_taskbar_hint">True</property>
-    <property name="filter">filefilter1</property>
-    <child type="titlebar">
-      <placeholder/>
-    </child>
-    <child internal-child="vbox">
-      <object class="GtkBox">
-        <property name="can_focus">False</property>
-        <property name="orientation">vertical</property>
-        <property name="spacing">2</property>
-        <child internal-child="action_area">
-          <object class="GtkButtonBox">
-            <property name="can_focus">False</property>
-            <property name="layout_style">end</property>
-            <child>
-              <object class="GtkButton" id="CancelButton">
-                <property name="label">gtk-cancel</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="use_stock">True</property>
-                <property name="always_show_image">True</property>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkButton" id="OpenButton">
-                <property name="label">gtk-open</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="can_default">True</property>
-                <property name="receives_default">True</property>
-                <property name="use_stock">True</property>
-                <property name="always_show_image">True</property>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">False</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-      </object>
-    </child>
-    <action-widgets>
-      <action-widget response="-6">CancelButton</action-widget>
-      <action-widget response="-5">OpenButton</action-widget>
-    </action-widgets>
   </object>
 </interface>

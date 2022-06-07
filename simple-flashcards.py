@@ -13,7 +13,6 @@ os.chdir(base_path)
 
 ### global variables
 builder = Gtk.Builder()
-
 deck = CardDeck()
 ###
 
@@ -32,7 +31,7 @@ class SignalHandlers:
             # do nothing if the user hasn't opened flashcards yet
             return
 
-        funcs = { 
+        funcs = {
                 'backBtn': deck.prev_card,
                 'flipOverBtn': deck.flip,
                 'forwardBtn': deck.next_card,
@@ -79,7 +78,11 @@ class SignalHandlers:
     def on_about_activate(self, _):
         dialog = builder.get_object("AboutDialog")
         dialog.run()
-        # not doing anything with the response
+        dialog.hide()
+
+    def on_keyboardShortcuts_activate(self, _):
+        dialog = builder.get_object("KeyboardShortcutsDialog")
+        dialog.run()
         dialog.hide()
 
 

@@ -9,6 +9,7 @@ A simple flashcard viewer. Make a deck of flashcards, and open it in the viewer.
 - Shuffle flashcards
 - Supports double-sided flashcards
 - Easy-to-use file format
+- Keyboard shortcuts for easy navigation
 
 # Usage
 

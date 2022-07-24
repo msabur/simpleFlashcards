@@ -47,10 +47,22 @@ class SignalHandlers:
         cardNumBuf.set_text(cardNumString())
 
     def on_open_activate(self, _):
+        def init_switch_by_name(name):
+            switch = builder.get_object(name)
+            switch.set_sensitive(True)
+            switch.set_active(False)
+
         dialog = builder.get_object("FileChooserDialog")
         response = dialog.run()
         if response == Gtk.ResponseType.OK:
             try:
+                # Initialize switches
+                init_switch_by_name('shuffleBtn')
+                init_switch_by_name('reverseBtn')
+
+                # Clear old cards and their state
+                deck.reset()
+
                 # Load cards from the file
                 fronts, backs = cardParser.from_file(dialog.get_filename())
                 deck.load_data(fronts, backs)
@@ -58,16 +70,6 @@ class SignalHandlers:
                 # Make the cards show up on screen
                 card_buffer = builder.get_object("cardTextBuffer")
                 card_buffer.set_text(deck.get_text())
-
-                # Start in an unshuffled state
-                shuffleBtn = builder.get_object('shuffleBtn')
-                shuffleBtn.set_sensitive(True)
-                shuffleBtn.set_active(False)
-
-                # Start in an unreversed state
-                reverseBtn = builder.get_object('reverseBtn')
-                reverseBtn.set_sensitive(True)
-                reverseBtn.set_active(False)
 
                 # Show card number
                 cardNumBuf = builder.get_object("cardNumber").get_buffer()

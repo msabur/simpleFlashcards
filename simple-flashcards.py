@@ -35,7 +35,8 @@ class SignalHandlers:
                 'backBtn': deck.prev_card,
                 'flipOverBtn': deck.flip,
                 'forwardBtn': deck.next_card,
-                'shuffleBtn': deck.toggle_shuffle
+                'shuffleBtn': deck.toggle_shuffle,
+                'reverseBtn': deck.toggle_reverse,
                 }
         funcs[button.get_name()]()
 
@@ -62,6 +63,11 @@ class SignalHandlers:
                 shuffleBtn = builder.get_object('shuffleBtn')
                 shuffleBtn.set_sensitive(True)
                 shuffleBtn.set_active(False)
+
+                # Start in an unreversed state
+                reverseBtn = builder.get_object('reverseBtn')
+                reverseBtn.set_sensitive(True)
+                reverseBtn.set_active(False)
 
                 # Show card number
                 cardNumBuf = builder.get_object("cardNumber").get_buffer()

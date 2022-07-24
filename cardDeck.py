@@ -82,3 +82,9 @@ class CardDeck:
         else:
             self.shuffle()
 
+    def toggle_reverse(self):
+        """
+        flip all cards by making the fronts backs, and the backs fronts
+        """
+        self.fronts, self.backs = self.backs, self.fronts
+

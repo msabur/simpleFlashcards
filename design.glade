@@ -9,7 +9,7 @@
     <property name="type_hint">dialog</property>
     <property name="skip_taskbar_hint">True</property>
     <property name="program_name">Simple Flashcards</property>
-    <property name="version">v1.2.0</property>
+    <property name="version">v1.3.0</property>
     <property name="comments" translatable="yes">To open a deck of flashcards, click File, then click Open</property>
     <property name="authors">Maahee Abdus Sabur</property>
     <property name="artists">&lt;a href="https://www.flaticon.com/authors/freepik"&gt;Freepik&lt;/a&gt; from &lt;a href="http://www.flaticon.com/"&gt;www.flaticon.com&lt;/a&gt;</property>

@@ -30,9 +30,7 @@ You can use a prebuilt binary, build your own binary, or run from source.
 ## Running from source
 
 1. [Install GTK dependencies](https://pygobject.readthedocs.io/en/latest/getting_started.html)
-2. Optionally, start a virtualenv: `python3 -m virtualenv venv; source venv/bin/activate`
-3. Run `pip install -r requirements.txt`
-4. Run `python3 simple-flashcards.py`
+2. Run `python3 simple-flashcards.py`
 
 # Format of a flashcard deck file
 

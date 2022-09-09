@@ -33,7 +33,7 @@ def from_string(string):
     for card in cards:
         sides = card.split('\n---\n')
         if len(sides) != 2:
-            raise ValueError
+            return None, None
         fronts.append(sides[0])
         backs.append(sides[1])
 

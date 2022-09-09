@@ -1,18 +1,17 @@
 import os
 import sys
-import traceback
-import gi
-gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
+import tkinter as tk
+from tkinter import ttk, filedialog
+from ttkthemes import ThemedTk
 from cardDeck import CardDeck
 import cardParser
 
-base_path = getattr(sys, '_MEIPASS',
-        os.path.dirname(os.path.abspath(__file__)))
-os.chdir(base_path)
+def changeToSourceDirectory():
+    base_path = getattr(sys, '_MEIPASS',
+            os.path.dirname(os.path.abspath(__file__)))
+    os.chdir(base_path)
 
 ### global variables
-builder = Gtk.Builder()
 deck = CardDeck()
 ###
 
@@ -22,80 +21,135 @@ def cardNumString():
     numCards = deck.get_card_count()
     return f"{cardNumber}/{numCards}"
 
-class SignalHandlers:
-    def onDestroy(self, *args):
-        Gtk.main_quit()
+class App(ThemedTk):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.title("Simple Flashcards")
+        self.geometry('400x200')
 
-    def onCardChange(self, button):
-        if not deck.loaded:
-            # do nothing if the user hasn't opened flashcards yet
-            return
+        self.addTopMenu()
 
-        funcs = {
-                'backBtn': deck.prev_card,
-                'flipOverBtn': deck.flip,
-                'forwardBtn': deck.next_card,
-                'shuffleBtn': deck.toggle_shuffle,
-                'reverseBtn': deck.toggle_reverse,
-                }
-        funcs[button.get_name()]()
+        self.cardVar = tk.StringVar()
+        self.cardVar.set('No cards open. Go to File | Open to open a deck of flashcards.')
+        self.mainLabel = ttk.Label(self, textvariable=self.cardVar, anchor='n')
+        self.mainLabel.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-        card_buffer = builder.get_object("cardTextBuffer")
-        card_buffer.set_text(deck.get_text())
+        self.shuffled = tk.IntVar()
+        self.shuffled.set(0)
 
-        cardNumBuf = builder.get_object("cardNumber").get_buffer()
-        cardNumBuf.set_text(cardNumString())
+        self.addStatusbar()
+        self.addBottomButtons()
 
-    def on_open_activate(self, _):
-        def init_switch_by_name(name):
-            switch = builder.get_object(name)
-            switch.set_sensitive(True)
-            switch.set_active(False)
+    def addTopMenu(self):
+        menubar = tk.Menu(self)
+        self.config(menu=menubar)
 
-        dialog = builder.get_object("FileChooserDialog")
-        response = dialog.run()
-        if response == Gtk.ResponseType.OK:
-            try:
-                # Initialize switches
-                init_switch_by_name('shuffleBtn')
-                init_switch_by_name('reverseBtn')
+        # create the file_menu
+        file_menu = tk.Menu(
+            menubar,
+            tearoff=0
+        )
 
-                # Clear old cards and their state
-                deck.reset()
+        file_menu.add_command(
+            label='Open',
+            command=self.open_file
+        )
 
-                # Load cards from the file
-                fronts, backs = cardParser.from_file(dialog.get_filename())
-                deck.load_data(fronts, backs)
+        file_menu.add_command(
+            label='Exit',
+            command=self.destroy
+        )
 
-                # Make the cards show up on screen
-                card_buffer = builder.get_object("cardTextBuffer")
-                card_buffer.set_text(deck.get_text())
+        # add the File menu to the menubar
+        menubar.add_cascade(
+            label="File",
+            menu=file_menu
+        )
 
-                # Show card number
-                cardNumBuf = builder.get_object("cardNumber").get_buffer()
-                cardNumBuf.set_text(cardNumString())
-            except Exception as e:
-                print(traceback.format_exc())
-                error_dialog = builder.get_object("ParsingErrorDialog")
-                error_dialog.run()
-                # not doing anything with the response
-                error_dialog.hide()
+        help_menu = tk.Menu(
+            menubar,
+            tearoff=0
+        )
 
-        dialog.hide()
+        help_menu.add_command(
+            label='Shortcuts',
+            command=self.show_shortcuts
+        )
 
-    def on_about_activate(self, _):
-        dialog = builder.get_object("AboutDialog")
-        dialog.run()
-        dialog.hide()
+        help_menu.add_command(
+            label='About',
+            command=self.show_about
+        )
 
-    def on_keyboardShortcuts_activate(self, _):
-        dialog = builder.get_object("KeyboardShortcutsDialog")
-        dialog.run()
-        dialog.hide()
+        # add the Help menu to the menubar
+        menubar.add_cascade(
+            label="Help",
+            menu=help_menu
+        )
 
+    def addStatusbar(self):
+        self.cardNumVar = tk.StringVar();
+        self.cardNumVar.set('0/0')
+        self.statusFrame = ttk.Frame(self)
+        self.numLabel = ttk.Label(self.statusFrame, textvariable=self.cardNumVar)
+        self.shuffleToggle = ttk.Checkbutton(self.statusFrame,
+                text='Shuffle', variable=self.shuffled, onvalue=1,
+                offvalue=0, command=self.doAndUpdate(deck.toggle_shuffle))
 
-builder.add_from_file("design.glade")
-builder.connect_signals(SignalHandlers())
-window = builder.get_object("MainWindow")
-window.show_all()
-Gtk.main()
+        self.statusFrame.pack(fill=tk.X)
+        self.numLabel.pack(side=tk.LEFT)
+        self.shuffleToggle.pack(side=tk.RIGHT)
+
+    def addBottomButtons(self):
+        self.prev_btn = ttk.Button(self, text="Previous")
+        self.prev_btn['command'] = self.doAndUpdate(deck.prev_card)
+        self.prev_btn.pack(side=tk.LEFT, fill=tk.X, expand=True)
+
+        self.flip_btn = ttk.Button(self, text="Flip over")
+        self.flip_btn['command'] = self.doAndUpdate(deck.flip)
+        self.flip_btn.pack(side=tk.LEFT, fill=tk.X, expand=True)
+
+        self.next_btn = ttk.Button(self, text="Next")
+        self.next_btn['command'] = self.doAndUpdate(deck.next_card)
+        self.next_btn.pack(side=tk.LEFT, fill=tk.X, expand=True)
+
+    def updateCardView(self):
+        self.cardVar.set(deck.get_text())
+        self.cardNumVar.set(cardNumString())
+
+    def open_file(self):
+        filetypes = (
+            ('text files', '*.txt'),
+            ('All files', '*.*')
+        )
+        file = filedialog.askopenfile(filetypes=filetypes)
+
+        if file:
+            self.shuffled.set(0)
+            deck.reset()
+            fronts, backs = cardParser.from_string(file.read())
+            deck.load_data(fronts, backs)
+            self.updateCardView()
+
+    def show_about(self):
+        pass
+
+    def show_shortcuts(self):
+        pass
+
+    def doAndUpdate(self, f):
+        # for event handlers where we need to do something then update the view
+        def inner():
+            f()
+            self.updateCardView()
+        return inner
+
+if __name__ == '__main__':
+    changeToSourceDirectory()
+    window = App(theme='arc')
+    window.mainloop()
+
+    # restart when closed. for developing only
+    # TODO remove
+    python = sys.executable
+    os.execl(python, python, *sys.argv)

@@ -1,7 +1,10 @@
 import os
 import sys
+import pathlib
+from appdirs import user_data_dir
 import tkinter as tk
 from tkinter import ttk, filedialog
+from awesometkinter.bidirender import add_bidi_support
 from ttkthemes import ThemedTk
 from cardDeck import CardDeck
 import cardParser
@@ -22,10 +25,10 @@ def cardNumString(deck):
 
 
 # https://stackoverflow.com/a/62485627
-class WrappingLabel(ttk.Label):
+class WrappingLabel(tk.Label):
     '''a type of Label that automatically adjusts the wrap to the size'''
     def __init__(self, master=None, **kwargs):
-        ttk.Label.__init__(self, master, **kwargs)
+        super().__init__(master, **kwargs)
         self.bind('<Configure>', lambda e: self.config(wraplength=self.winfo_width()))
 
 class App(ThemedTk):
@@ -34,17 +37,18 @@ class App(ThemedTk):
         self.title("Simple Flashcards")
         self.geometry('450x250')
         self.iconphoto(False, tk.PhotoImage(file='icon.png'))
+
         self.deck = CardDeck()
+        self.data_dir = user_data_dir('simple-flashcards')
+        pathlib.Path(self.data_dir).mkdir(parents=True, exist_ok=True)
 
         self.addTopButtons()
         ttk.Separator(self, orient='horizontal').pack(fill=tk.X)
 
-        self.cardVar = tk.StringVar()
-        self.cardVar.set('Click Open to open a deck of flashcards.')
-        self.mainLabel = WrappingLabel(self, textvariable=self.cardVar,
-                anchor='n')
+        self.mainLabel = WrappingLabel(self, anchor='n')
         self.mainLabel.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-
+        add_bidi_support(self.mainLabel)
+        self.mainLabel.set('Click Open to open a deck of flashcards.')
 
         ttk.Separator(self, orient='horizontal').pack(fill=tk.X)
         self.addStatusbar()
@@ -55,7 +59,9 @@ class App(ThemedTk):
         topFrame = ttk.Frame(self)
 
         ttk.Button(topFrame, text="Open",
-                command=self.open_file).pack(side=tk.LEFT)
+                command=self.show_filedialog).pack(side=tk.LEFT, padx=5)
+        ttk.Button(topFrame, text="Load last file",
+                command=self.open_last_file).pack(side=tk.LEFT)
         ttk.Button(topFrame, text="Shortcuts",
                 command=self.show_shortcuts).pack(side=tk.RIGHT)
 
@@ -101,21 +107,25 @@ class App(ThemedTk):
 
     def updateCardView(self):
         if not self.deck.loaded: return # to preserve placeholder texts
-        self.cardVar.set(self.deck.get_text())
+        self.mainLabel.set(self.deck.get_text())
         self.cardNumVar.set(cardNumString(self.deck))
 
-    def open_file(self):
-        filetypes = (
-            ('text files', '*.txt'),
-            ('All files', '*.*')
-        )
-        file = self.safelyOpenDialog(
-                filedialog.askopenfile,
-                filetypes=filetypes
-        )
+    def open_last_file(self):
+        savePath = os.path.join(self.data_dir, "lastFilename")
+        if os.path.isfile(savePath):
+            with open(savePath, 'r') as f:
+                filename = f.read()
+            if os.path.isfile(filename):
+                self.open_file(filename)
+                return
 
-        if file:
-            fronts, backs = cardParser.from_string(file.read())
+        self.safelyOpenDialog(tk.messagebox.showwarning,
+                title="Last file not found",
+                message="Last file not found. Try using Open")
+
+    def open_file(self, filename):
+        if filename:
+            fronts, backs = cardParser.from_file(filename)
             if fronts is None:
                 # not using exceptions because try/catch is weird on tkinter
                 self.safelyOpenDialog(tk.messagebox.showerror,
@@ -127,19 +137,31 @@ class App(ThemedTk):
                 self.deck.reset()
                 self.deck.load_data(fronts, backs)
                 self.updateCardView()
+                savePath = os.path.join(self.data_dir, "lastFilename")
+                with open(savePath, 'w') as f:
+                    f.write(filename)
+
+    def show_filedialog(self):
+        filename = self.safelyOpenDialog(
+                filedialog.askopenfilename,
+        )
+        self.open_file(filename)
 
     def show_shortcuts(self):
-        shortcuts = [
+        entries = [
+                ('Shortcut', 'Action'),
+                ('----', '----'),
                 ('j', 'Next'),
                 ('k', 'Previous'),
                 ('f', 'Flip over'),
                 ('s', 'Toggle shuffle'),
                 ('r', 'Toggle reverse'),
                 ('Ctrl-o', 'Open a flashcard file'),
+                ('Ctrl-l', 'Load last file'),
                 ('Ctrl-h', 'Show this window'),
         ]
-        space = max([len(s[0]) for s in shortcuts]) + 5
-        message = '\n'.join([f"{combination: <{space}}{meaning}" for combination, meaning in shortcuts])
+        space = max([len(s[0]) for s in entries]) + 3
+        message = '\n'.join([f"{combination: <{space}}{meaning}" for combination, meaning in entries])
 
         self.option_add('*Dialog.msg.font', "Monospace 10")
         self.grab_set()
@@ -160,7 +182,8 @@ class App(ThemedTk):
             flipVar(self.reversed)
             self.deck.toggle_reverse()
 
-        self.bind('<Control-o>', lambda _: self.open_file())
+        self.bind('<Control-o>', lambda _: self.show_filedialog())
+        self.bind('<Control-l>', lambda _: self.open_last_file())
         self.bind('<Control-h>', lambda _: self.show_shortcuts())
         self.bind('s', lambda _: self.cardCb(toggle_shuffle)())
         self.bind('r', lambda _: self.cardCb(toggle_reverse)())

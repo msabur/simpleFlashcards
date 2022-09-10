@@ -4,15 +4,15 @@ import pathlib
 from appdirs import user_data_dir
 import tkinter as tk
 from tkinter import ttk, filedialog
-from awesometkinter.bidirender import add_bidi_support
 from ttkthemes import ThemedTk
+from awesometkinter.bidirender import add_bidi_support
 from cardDeck import CardDeck
 import cardParser
 
-def changeToSourceDirectory():
+def resource_path(filename):
     base_path = getattr(sys, '_MEIPASS',
             os.path.dirname(os.path.abspath(__file__)))
-    os.chdir(base_path)
+    return os.path.join(base_path, filename)
 
 ### global variables
 ###
@@ -36,7 +36,7 @@ class App(ThemedTk):
         super().__init__(*args, **kwargs)
         self.title("Simple Flashcards")
         self.geometry('450x250')
-        self.iconphoto(False, tk.PhotoImage(file='icon.png'))
+        self.iconphoto(False, tk.PhotoImage(file=resource_path('icon.gif')))
 
         self.deck = CardDeck()
         self.data_dir = user_data_dir('simple-flashcards')
@@ -215,6 +215,5 @@ class App(ThemedTk):
         )
 
 if __name__ == '__main__':
-    changeToSourceDirectory()
     window = App(theme='breeze')
     window.mainloop()

@@ -1,0 +1,6 @@
+appdirs==1.4.4
+AwesomeTkinter==2021.11.8
+Pillow==9.2.0
+python-bidi==0.4.2
+six==1.16.0
+ttkthemes==3.2.2

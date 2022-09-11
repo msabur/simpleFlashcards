@@ -5,6 +5,7 @@ from appdirs import user_data_dir
 import tkinter as tk
 from tkinter import ttk, filedialog
 from ttkthemes import ThemedTk
+import awesometkinter as atk
 from awesometkinter.bidirender import add_bidi_support
 from cardDeck import CardDeck
 import cardParser
@@ -37,6 +38,7 @@ class App(ThemedTk):
         self.title("Simple Flashcards")
         self.geometry('450x250')
         self.iconphoto(False, tk.PhotoImage(file=resource_path('icon.gif')))
+        self.protocol('WM_DELETE_WINDOW', self.on_close_clicked)
 
         self.deck = CardDeck()
         self.data_dir = user_data_dir('simple-flashcards')
@@ -143,7 +145,7 @@ class App(ThemedTk):
 
     def show_filedialog(self):
         filename = self.safelyOpenDialog(
-                filedialog.askopenfilename,
+                filedialog.askopenfilename
         )
         self.open_file(filename)
 
@@ -199,11 +201,11 @@ class App(ThemedTk):
         return inner
 
     def safelyOpenDialog(self, dialog_function, *args, **kwargs):
-        # keeps the root hidden while the dialog is open.
-        # this prevents errors if the root is closed before the dialog.
-        self.withdraw()
+        # don't let root be closed before the dialog
+        # this is to prevent an error
+        self.close_enabled = False
         retval = dialog_function(*args, **kwargs)
-        self.deiconify()
+        self.close_enabled = True
         return retval
 
     def report_callback_exception(self, exc, val, tb):
@@ -213,6 +215,10 @@ class App(ThemedTk):
             title='Error',
             message=f'An error occurred: {exc.__name__}'
         )
+
+    def on_close_clicked(self):
+        if getattr(self, 'close_enabled', True):
+            self.destroy()
 
 if __name__ == '__main__':
     window = App(theme='breeze')

@@ -25,12 +25,25 @@ def cardNumString(deck):
     return f"{cardNumber}/{numCards}"
 
 
-# https://stackoverflow.com/a/62485627
-class WrappingLabel(tk.Label):
-    '''a type of Label that automatically adjusts the wrap to the size'''
+class CardLabel(tk.Label):
     def __init__(self, master=None, **kwargs):
         super().__init__(master, **kwargs)
+
+        # automatically adjust the wrap to the size
+        # https://stackoverflow.com/a/62485627
         self.bind('<Configure>', lambda e: self.config(wraplength=self.winfo_width()))
+
+        font = self.cget("font")
+        self.font = tk.font.nametofont('TkDefaultFont')
+        self.configure(font=self.font)
+
+    def get_size(self):
+        # multiplying by -1 is necessary here
+        return int(self.font.cget('size')) * -1
+
+    def set_size(self, newSize):
+        # multiplying by -1 is necessary here
+        self.font.configure(size=(newSize * -1))
 
 class App(ThemedTk):
     def __init__(self, *args, **kwargs):
@@ -44,10 +57,14 @@ class App(ThemedTk):
         self.data_dir = user_data_dir('simple-flashcards')
         pathlib.Path(self.data_dir).mkdir(parents=True, exist_ok=True)
 
+        self.cardNumVar = tk.StringVar();
+        self.shuffled = tk.IntVar()
+        self.reversed = tk.IntVar()
+
         self.addTopButtons()
         ttk.Separator(self, orient='horizontal').pack(fill=tk.X)
 
-        self.mainLabel = WrappingLabel(self, anchor='n')
+        self.mainLabel = CardLabel(self, anchor='n')
         self.mainLabel.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         add_bidi_support(self.mainLabel)
         self.mainLabel.set('Click Open to open a deck of flashcards.')
@@ -61,20 +78,22 @@ class App(ThemedTk):
         topFrame = ttk.Frame(self)
 
         ttk.Button(topFrame, text="Open",
-                command=self.show_filedialog).pack(side=tk.LEFT, padx=5)
+                command=self.show_filedialog).pack(side=tk.LEFT)
         ttk.Button(topFrame, text="Load last file",
-                command=self.open_last_file).pack(side=tk.LEFT)
+                command=self.open_last_file).pack(side=tk.LEFT, padx=5)
+
         ttk.Button(topFrame, text="Shortcuts",
-                command=self.show_shortcuts).pack(side=tk.RIGHT)
+                   command=self.show_shortcuts).pack(side=tk.RIGHT)
+        ttk.Button(topFrame, text="+", width=1,
+                command=self.larger_card_text).pack(side=tk.RIGHT, padx=5)
+        ttk.Button(topFrame, text="-", width=1,
+                command=self.smaller_card_text).pack(side=tk.RIGHT)
 
         topFrame.pack(fill=tk.X)
 
     def addStatusbar(self):
-        self.cardNumVar = tk.StringVar();
         self.cardNumVar.set('0/0')
-        self.shuffled = tk.IntVar()
         self.shuffled.set(0)
-        self.reversed = tk.IntVar()
         self.reversed.set(0)
 
         statusFrame = ttk.Frame(self)
@@ -149,6 +168,14 @@ class App(ThemedTk):
         )
         self.open_file(filename)
 
+    def smaller_card_text(self):
+        oldSize = self.mainLabel.get_size()
+        self.mainLabel.set_size(oldSize - 1)
+
+    def larger_card_text(self):
+        oldSize = self.mainLabel.get_size()
+        self.mainLabel.set_size(oldSize + 1)
+
     def show_shortcuts(self):
         entries = [
                 ('Shortcut', 'Action'),
@@ -158,6 +185,8 @@ class App(ThemedTk):
                 ('f', 'Flip over'),
                 ('s', 'Toggle shuffle'),
                 ('r', 'Toggle reverse'),
+                ('+', 'Zoom in'),
+                ('-', 'Zoom out'),
                 ('Ctrl-o', 'Open a flashcard file'),
                 ('Ctrl-l', 'Load last file'),
                 ('Ctrl-h', 'Show this window'),
@@ -187,15 +216,19 @@ class App(ThemedTk):
         self.bind('<Control-o>', lambda _: self.show_filedialog())
         self.bind('<Control-l>', lambda _: self.open_last_file())
         self.bind('<Control-h>', lambda _: self.show_shortcuts())
-        self.bind('s', lambda _: self.cardCb(toggle_shuffle)())
-        self.bind('r', lambda _: self.cardCb(toggle_reverse)())
-        self.bind('j', lambda _: self.cardCb(self.deck.next_card)())
-        self.bind('k', lambda _: self.cardCb(self.deck.prev_card)())
-        self.bind('f', lambda _: self.cardCb(self.deck.flip)())
+        self.bind('+', lambda _: self.larger_card_text())
+        self.bind('=', lambda _: self.larger_card_text()) # convenience
+        self.bind('-', lambda _: self.smaller_card_text())
+        self.bind('_', lambda _: self.smaller_card_text()) # convenience
+        self.bind('s', self.cardCb(toggle_shuffle))
+        self.bind('r', self.cardCb(toggle_reverse))
+        self.bind('j', self.cardCb(self.deck.next_card))
+        self.bind('k', self.cardCb(self.deck.prev_card))
+        self.bind('f', self.cardCb(self.deck.flip))
 
     def cardCb(self, f):
         # returns a callback function that calls "f" then updates the view
-        def inner():
+        def inner(*args, **kwargs):
             f()
             self.updateCardView()
         return inner
